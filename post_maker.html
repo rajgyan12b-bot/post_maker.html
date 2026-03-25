@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Creator Pro - Mobile & PC Edition</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --card-bg: #181818;
+            --accent-color: #d48b0c; /* Golden Yellow */
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --input-bg: #222222;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR PANEL --- */
+        .sidebar {
+            width: 380px;
+            background: var(--card-bg);
+            border-right: 1px solid #333;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .sidebar h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+        }
+
+        .control-section {
+            background: #111;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #222;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: #bbb; }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-color);
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid #333;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            resize: none;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        select {
+            width: 100%;
+            background: var(--input-bg);
+            color: white;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+
+        .color-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .color-box {
+            flex: 1;
+            height: 35px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: none;
+        }
+
+        /* --- BUTTONS --- */
+        .btn-main {
+            background: #ccc;
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .btn-main:hover { background: white; transform: translateY(-2px); }
+
+        /* --- MAIN VIEWPORT --- */
+        .viewport {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #050505;
+            padding: 20px;
+            position: relative;
+        }
+
+        #canvas-wrapper {
+            box-shadow: 0 20px 50px rgba(0,0,0,1);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #222;
+            background: #000;
+        }
+
+        canvas {
+            display: block;
+            max-height: 85vh;
+            max-width: 100%;
+        }
+
+        /* --- MOBILE RESPONSIVE SETTINGS --- */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #333;
+                box-sizing: border-box;
+                height: auto;
+                overflow-y: visible;
+            }
+            .viewport {
+                padding: 20px 10px;
+                min-height: 60vh;
+            }
+            canvas {
+                max-height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1>Post Creator</h1>
+        
+        <div class="control-section">
+            <div class="section-title">Source Image</div>
+            <input type="file" id="imageInput" accept="image/*" style="color: #888;">
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Text Content</div>
+            <textarea id="textInput" rows="4">HE REIGNED ENGLAND FOR [56 YEARS], REBUILT THE {WESTMINSTER ABBEY}, AND ESTABLISHED THE [FIRST PARLIAMENT]. {KING HENRY III, 1216}.</textarea>
+            <p style="font-size: 10px; color: #555; margin-top: 5px;">[Red Highlight] | {Yellow Highlight}</p>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Adjustments</div>
+            <label>Vignette Strength</label>
+            <input type="range" id="vignette" min="0" max="1" step="0.05" value="0.5">
+            
+            <label>Bottom Shadow Height</label>
+            <input type="range" id="shadowHeight" min="0" max="1000" value="600">
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Typography</div>
+            <select id="fontFamily">
+                <option value="Montserrat">Montserrat (Clean)</option>
+                <option value="Georgia">Caslon (Historical)</option>
+                <option value="Impact">True Fate (Aggressive)</option>
+            </select>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <div style="flex:1"><label>Size</label><input type="range" id="fontSize" min="20" max="150" value="65"></div>
+                <div style="flex:1"><label>Y-Pos</label><input type="range" id="textY" min="500" max="1300" value="1050"></div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Color Palette</div>
+            <div class="color-row">
+                <input type="color" id="cNorm" class="color-box" value="#ffffff" title="Normal Text">
+                <input type="color" id="cH1" class="color-box" value="#ff5050" title="Highlight 1 [ ]">
+                <input type="color" id="cH2" class="color-box" value="#d48b0c" title="Highlight 2 { }">
+            </div>
+        </div>
+
+        <button class="btn-main" onclick="downloadPost()">⬇ Download Final Post</button>
+    </div>
+
+    <div class="viewport">
+        <div id="canvas-wrapper">
+            <canvas id="mainCanvas" width="1080" height="1350"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const imgInput = document.getElementById('imageInput');
+        
+        const controlIds = ['textInput', 'vignette', 'shadowHeight', 'fontSize', 'textY', 'fontFamily', 'cNorm', 'cH1', 'cH2'];
+        let activeImage = null;
+
+        controlIds.forEach(id => {
+            document.getElementById(id).addEventListener('input', draw);
+        });
+
+        imgInput.addEventListener('change', (e) => {
+            const reader = new FileReader();
+            reader.onload = (f) => {
+                activeImage = new Image();
+                activeImage.onload = draw;
+                activeImage.src = f.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (activeImage) {
+                // 1. Center Fit Image (4:5 Ratio)
+                const scale = Math.max(canvas.width / activeImage.width, canvas.height / activeImage.height);
+                const x = (canvas.width / 2) - (activeImage.width / 2) * scale;
+                const y = (canvas.height / 2) - (activeImage.height / 2) * scale;
+                ctx.drawImage(activeImage, x, y, activeImage.width * scale, activeImage.height * scale);
+
+                // 2. Pro Vignette
+                const vig = document.getElementById('vignette').value;
+                const vGrad = ctx.createRadialGradient(540, 675, 100, 540, 675, 1000);
+                vGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                vGrad.addColorStop(1, `rgba(0,0,0,${vig})`);
+                ctx.fillStyle = vGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 3. Bottom Gradient Shadow
+                const sH = parseInt(document.getElementById('shadowHeight').value);
+                const sGrad = ctx.createLinearGradient(0, 1350 - sH, 0, 1350);
+                sGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                sGrad.addColorStop(1, 'rgba(0,0,0,0.95)');
+                ctx.fillStyle = sGrad;
+                ctx.fillRect(0, 1350 - sH, canvas.width, sH);
+
+                renderText();
+            } else {
+                ctx.fillStyle = "#111";
+                ctx.fillRect(0,0,1080,1350);
+                ctx.fillStyle = "white";
+                ctx.font = "35px Inter";
+                ctx.textAlign = "center";
+                ctx.fillText("Bhai, image upload karo!", 540, 675);
+            }
+        }
+
+        function renderText() {
+            const rawText = document.getElementById('textInput').value.toUpperCase();
+            const fSize = parseInt(document.getElementById('fontSize').value);
+            const fontFam = document.getElementById('fontFamily').value;
+            const yPos = parseInt(document.getElementById('textY').value);
+            
+            const colNormal = document.getElementById('cNorm').value;
+            const colH1 = document.getElementById('cH1').value;
+            const colH2 = document.getElementById('cH2').value;
+
+            ctx.font = `bold ${fSize}px ${fontFam}`;
+            ctx.textAlign = "left";
+
+            const words = rawText.split(/\s+/);
+            let curX = 80;
+            let curY = yPos;
+            const margin = 80;
+            const maxWidth = 1000;
+
+            words.forEach(word => {
+                let activeColor = colNormal;
+                let cleanWord = word;
+
+                // Robust logic for highlights (handles commas/brackets)
+                if (word.includes('[') || word.includes(']')) {
+                    activeColor = colH1;
+                    cleanWord = word.replace(/\[/g, "").replace(/\]/g, "");
+                } else if (word.includes('{') || word.includes('}')) {
+                    activeColor = colH2;
+                    cleanWord = word.replace(/\{/g, "").replace(/\}/g, "");
+                }
+
+                let metrics = ctx.measureText(cleanWord + " ");
+                
+                if (curX + metrics.width > maxWidth) {
+                    curX = margin;
+                    curY += fSize + 20;
+                }
+
+                ctx.fillStyle = activeColor;
+                ctx.fillText(cleanWord, curX, curY);
+                curX += metrics.width;
+            });
+        }
+
+        function downloadPost() {
+            const link = document.createElement('a');
+            link.download = 'pro-post-45.png';
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        }
+
+        draw();
+    </script>
+</body>
+</html>
